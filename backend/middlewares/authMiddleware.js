@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import Student from '../models/student.js';
+import Student from '../models/Student.js';
 import Club from '../models/Club.js';
                                                         
 
