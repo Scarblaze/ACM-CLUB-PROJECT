@@ -13,7 +13,7 @@ import {
   getclubprofile,createBlog,
   changeStudentPassword
   
-} from '../controllers/studentContoller.js';
+} from '../controllers/StudentContoller.js';
 
 import { protectStudent } from '../middlewares/authMiddleware.js';
 import upload from '../middlewares/multer.js';
