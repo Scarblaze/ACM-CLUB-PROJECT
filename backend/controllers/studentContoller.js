@@ -1,4 +1,4 @@
-import Student from '../models/student.js';
+import Student from '../models/Student.js';
 import Blog from '../models/Blog.js';
 import cloudinary from 'cloudinary';
 import Club from '../models/Club.js'
