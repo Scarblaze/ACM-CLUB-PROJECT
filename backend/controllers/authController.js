@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import Student from '../models/student.js';
+import Student from '../models/Student.js';
 import Club from '../models/Club.js';
 import generateToken from '../utils/generateToken.js';
 
