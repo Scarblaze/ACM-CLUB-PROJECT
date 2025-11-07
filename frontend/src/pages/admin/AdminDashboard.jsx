@@ -13,7 +13,7 @@ import FullClubcard from "./FullClubcard";
 import Analytics from "./Analytics";
 
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const apiBaseUrl = "https://acm-club-project-backend.onrender.com";
 export const fetchclubs = async () => {
   try {
     const res = await axios.get(`${apiBaseUrl}/api/admin/pending-clubs`, {
@@ -218,3 +218,4 @@ const AdminHome = () => {
 };
 
 export default AdminHome;
+
