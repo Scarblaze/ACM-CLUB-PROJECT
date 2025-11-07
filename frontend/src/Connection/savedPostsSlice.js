@@ -3,6 +3,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../api/axios';
 
+const apiUrl = ""https://acm-club-project-backend.onrender.com"";
 export const fetchSavedPosts = createAsyncThunk(
   'savedPosts/fetchSavedPosts',
   async (_, { rejectWithValue }) => {
