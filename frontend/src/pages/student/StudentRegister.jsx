@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const apiBaseUrl = "https://acm-club-project-backend.onrender.com";
 const StudentRegister = () => {
   const [formData, setFormData] = useState({
     name: "",

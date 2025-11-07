@@ -3,12 +3,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../api/axios';
 
-const apiUrl = ""https://acm-club-project-backend.onrender.com"";
-export const fetchSavedPosts = createAsyncThunk(
-  'savedPosts/fetchSavedPosts',
+const apiBaseUrl = "https://acm-club-project-backend.onrender.com";
+
+export const fetchLikedPosts = createAsyncThunk(
+  'likedPosts/fetchLikedPosts',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('${apiUrl}/students/saved');
+      const response = await axios.get(`${apiUrl}/api/students/liked`);
       return response.data; 
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch liked posts');
@@ -16,20 +17,20 @@ export const fetchSavedPosts = createAsyncThunk(
   }
 );
 
-export const savePost = createAsyncThunk(
-  'savedPosts/savePost',
+export const likePost = createAsyncThunk(
+  'likedPosts/likePost',
   async (postId, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/students/save/${postId}`);
-      return response.data; // assumed the API returns the updated post
+      const response = await axios.put(`/students/like/${postId}`);
+      return response.data; // Assuming the API returns the updated post
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to like post');
     }
   }
 );
 
-export const unsavePost = createAsyncThunk(
-  'unsavedPosts/unsavePost',
+export const unlikePost = createAsyncThunk(
+  'likedPosts/unlikePost',
   async (postId, { rejectWithValue }) => {
     try {
       const response = await axios.put(`/students/unlike/${postId}`);
@@ -40,44 +41,44 @@ export const unsavePost = createAsyncThunk(
   }
 );
 
-const savedPostsSlice = createSlice({
-  name: 'savedPosts',
+const likedPostsSlice = createSlice({
+  name: 'likedPosts',
   initialState: {
-    savedPosts: [],
+    likedPosts: [],
     loading: false,
     error: null,
   },
   reducers: {
-    clearSavedPosts: (state) => {
-      state.savedPosts = [];
+    clearLikedPosts: (state) => {
+      state.likedPosts = [];
       state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchSavedPosts.pending, (state) => {
+      .addCase(fetchLikedPosts.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchSavedPosts.fulfilled, (state, action) => {
+      .addCase(fetchLikedPosts.fulfilled, (state, action) => {
         state.loading = false;
-        state.savedPosts = action.payload;
+        state.likedPosts = action.payload;
       })
-      .addCase(fetchSavedPosts.rejected, (state, action) => {
+      .addCase(fetchLikedPosts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(savePost.fulfilled, (state, action) => {
-        state.savedPosts.push(action.payload);
+      .addCase(likePost.fulfilled, (state, action) => {
+        state.likedPosts.push(action.payload);
       })
-      .addCase(unsavePost.fulfilled, (state, action) => {
-        state.savedPosts = state.likedPosts.filter(
+      .addCase(unlikePost.fulfilled, (state, action) => {
+        state.likedPosts = state.likedPosts.filter(
           (post) => post._id !== action.payload._id
         );
       });
   },
 });
 
-export const { clearLikedPosts } = savedPostsSlice.actions;
+export const { clearLikedPosts } = likedPostsSlice.actions;
 
-export default savedPostsSlice.reducer;
+export default likedPostsSlice.reducer;

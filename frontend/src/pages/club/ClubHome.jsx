@@ -10,7 +10,7 @@ import ClubCouncil from "./ClubCouncil";
 import FullBlogcard from "./FullBlogcard";
 import axios from "axios";
 import { toast } from "react-toastify";
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const apiBaseUrl = "https://acm-club-project-backend.onrender.com";
 export const fetchclubinfo = async () => {
   try {
     const res = await axios.get(`${apiBaseUrl}/api/club/info`, {

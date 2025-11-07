@@ -10,7 +10,7 @@ import Postblog from "./postblog";
 import FullBlogView from "./FullBlogcard";
 import AllBlogs from "./AllBlogs";
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const apiBaseUrl = "https://acm-club-project-backend.onrender.com";
 export const fetchAllClubs = async () => {
   try {
     const response = await axios.get(

@@ -109,7 +109,7 @@ const FullBlogView = ({ blog, student }) => {
   const [likes, setLikes] = useState(blog?.likes || []);
   const [comments, setComments] = useState(blog?.comments || []);
   const [newComment, setNewComment] = useState("");
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const apiBaseUrl = "https://acm-club-project-backend.onrender.com";
 
   const isLiked = student && likes.includes(student._id);
 
