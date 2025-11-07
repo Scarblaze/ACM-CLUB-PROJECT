@@ -8,7 +8,7 @@ export const fetchSavedPosts = createAsyncThunk(
   'savedPosts/fetchSavedPosts',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/students/saved');
+      const response = await axios.get('${apiUrl}/students/saved');
       return response.data; 
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch liked posts');
