@@ -3,7 +3,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../api/axios';
 
-const apiUrl = import.meta.env.VITE_API_BASE_URL;
+const apiUrl = "https://acm-club-project-backend.onrender.com";
 
 export const fetchBlogs = createAsyncThunk('blogs/fetchBlogs',
     async ( { rejectWithValue }) => {
