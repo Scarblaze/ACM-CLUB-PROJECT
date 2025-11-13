@@ -17,11 +17,9 @@ const app = express();
 
 app.use(cookieParser());
 app.use(cors({
-    origin: (origin, callback) => {
-      callback(null, origin || "*");
-    },
-    credentials: true,
-  }));
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 
 // Connect DB
 connectDB();
@@ -35,5 +33,5 @@ app.use('/api/admin',adminRoutes);
 app.use('/api/club',clubRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on :${PORT}`);
 });
