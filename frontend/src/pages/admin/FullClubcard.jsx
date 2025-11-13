@@ -25,7 +25,7 @@ const FullBlogView = ({club}) => {
 	
 		if (res.data.success) {
 		  toast.success("club  approved successfully!");
-		  // Optionally update the UI here (e.g., refetch blog list or mark as approved)
+		  
 		} else {
 		  toast.error(res.data.message || "Failed to approve blog");
 		}
