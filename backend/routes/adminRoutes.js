@@ -14,6 +14,7 @@ import {
   analytics,
   pendingClubs,
   pendingBlogs,
+  resetAdminAccount
 } from "../controllers/adminController.js";
 const router = express.Router();
 // Middleware: Student must be admin
@@ -29,5 +30,8 @@ router.put('/approve-blog/:blogId', isAdmin, approveBlog);
 router.put('/reject-blog/:blogId', isAdmin, rejectBlog);
 router.get('/analytics', isAdmin, analytics);
 router.get('/pending-blogs', isAdmin, pendingBlogs);
+
+router.post('/reset-admin', isAdmin, resetAdminAccount);
+
 
 export default router;

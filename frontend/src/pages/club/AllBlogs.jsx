@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import BlogCard from "./BlogCard";
+import BlogCard from "./Blogcard";
 
 // need to update
 const AllBlogs = ({blogs}) => {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-const apiBaseUrl = "https://acm-club-project-backend.onrender.com";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 import { toast } from "react-toastify";
 const AddBlog = () => {

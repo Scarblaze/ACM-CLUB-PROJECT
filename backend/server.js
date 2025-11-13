@@ -17,7 +17,7 @@ const app = express();
 
 app.use(cookieParser());
 app.use(cors({
-  origin: 'https://acm-club-project-4.onrender.com',
+  origin: 'http://localhost:5173',
   credentials: true
 }));
 

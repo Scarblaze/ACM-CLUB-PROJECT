@@ -5,7 +5,7 @@ import axios from "axios";
 import AllBlogs from "./AllBlogs";
 import StudentProfileEditSection from "./StudentProfileEditSection";
 
-const apiBaseUrl = "https://acm-club-project-backend.onrender.com";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchstudentinfo = async () => {
   try {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-const apiBaseUrl = "https://acm-club-project-backend.onrender.com";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const AdminStats = () => {
   const [stats, setStats] = useState({

@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-const apiBaseUrl = "https://acm-club-project-backend.onrender.com";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const FullBlogView = ({blog}) => {
   const location = useLocation();
   const navigate = useNavigate();

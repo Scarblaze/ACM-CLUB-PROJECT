@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
-const apiBaseUrl = "https://acm-club-project-backend.onrender.com";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const ViewClub = ({ club }) => {
   const [logo, setLogo] = useState("/images/acm-logo.png");
   const [newName, setNewName] = useState("");
