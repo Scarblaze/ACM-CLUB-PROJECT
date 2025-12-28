@@ -5,7 +5,7 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-const FullBlogView = ({club}) => {
+const FullClubView = ({club}) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -25,7 +25,7 @@ const FullBlogView = ({club}) => {
 	
 		if (res.data.success) {
 		  toast.success("club  approved successfully!");
-		  
+		  // Optionally update the UI here (e.g., refetch blog list or mark as approved)
 		} else {
 		  toast.error(res.data.message || "Failed to approve blog");
 		}
@@ -103,4 +103,4 @@ const FullBlogView = ({club}) => {
   );
 };
 
-export default FullBlogView;
+export default FullClubView;

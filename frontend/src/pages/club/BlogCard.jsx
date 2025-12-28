@@ -2,7 +2,7 @@ import React from "react";
 import { Heart, Share2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import ShareButton from "../student/ShareSocially" 
+
 
 
 const BlogCard = ({ blog }) => {
@@ -33,14 +33,7 @@ const BlogCard = ({ blog }) => {
             <Heart className="w-4 h-4 text-red-500" />
             <span>{blog.likes.length}</span>
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            className="flex items-center gap-1 hover:text-blue-500"
-          >
-            <ShareButton url={blogUrl} title={blog.title} />
-          </button>
+         
         </div>
         <button
            onClick={() => handleReadMore(blog._id)}

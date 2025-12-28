@@ -1,40 +1,74 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-const StudentProfileEditSection = ({ student }) => {
+const StudentProfileEditsection = ({ student }) => {
   const [editName, setEditName] = useState(student.name || "");
   const [editMode, setEditMode] = useState(false);
   const [photo, setPhoto] = useState(student.profilePic || "");
   const [preview, setPreview] = useState(student.profilePic || "");
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [showPhotoActions, setShowPhotoActions] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // 🔄 Update Name + Profile Picture
+  // 🔄 Update Name
   const handleProfileUpdate = async () => {
     try {
       const formData = new FormData();
       formData.append("name", editName);
-      if (photo && typeof photo !== "string") formData.append("profilePic", photo);
-
-      const res = await axios.put(`${apiBaseUrl}/api/students/update-profile`, formData, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" }
-      });
+     
+      const res = await axios.put(
+        `${apiBaseUrl}/api/student/update-profile`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       toast.success("Profile updated successfully!");
+      window.location.reload();
       setEditMode(false);
-      if (res.data?.student?.profilePic) setPreview(res.data.student.profilePic);
+      if (res.data?.student?.profilePic)
+        setPreview(res.data.student.profilePic);
     } catch (err) {
       toast.error("Failed to update profile");
     }
+  };
+
+  const handlePhotoUpdate = async () => {
+    try {
+      const formData = new FormData();
+      if (photo) formData.append("profilePic", photo);
+
+      const res = await axios.put(
+        `${apiBaseUrl}/api/student/update-photo`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      toast.success("Profile updated successfully!");
+      if (res.data?.student?.profilePic)
+        setPreview(res.data.student.profilePic);
+      setShowPhotoActions(false);
+      setPhoto(null);
+    } catch (err) {
+      toast.error("Failed to update profile");
+    }
+  };
+  const handlePhotoCancel = () => {
+    setPreview(student.profilePic || "");
+    setPhoto(null);
+    setShowPhotoActions(false);
   };
 
   // 📷 Handle Photo Select
@@ -43,26 +77,33 @@ const StudentProfileEditSection = ({ student }) => {
     if (file) {
       setPhoto(file);
       setPreview(URL.createObjectURL(file));
+
+      setShowPhotoActions(true);
     }
   };
 
   // 🔐 Handle Password Change
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    if (newPassword !== confirmPassword) return toast.error("Passwords don't match");
+    if (newPassword !== confirmPassword)
+      return toast.error("Passwords don't match");
 
     try {
       await axios.put(
-        `${apiBaseUrl}/api/students/change-password`,
+        `${apiBaseUrl}/api/student/change-password`,
         { currentPassword, newPassword },
         { withCredentials: true }
       );
       toast.success("Password updated!");
-      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
       setShowPasswordForm(false);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to update password");
-      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
       setShowPasswordForm(false);
     }
   };
@@ -84,7 +125,9 @@ const StudentProfileEditSection = ({ student }) => {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Profile Picture</p>
+        <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          Profile Picture
+        </p>
         <div className="relative group">
           <img
             src={preview || "https://via.placeholder.com/150"}
@@ -108,6 +151,23 @@ const StudentProfileEditSection = ({ student }) => {
           </div>
         </div>
       </motion.div>
+      {showPhotoActions && (
+        <div className="flex justify-center space-x-3 mt-4">
+          <button
+            onClick={handlePhotoUpdate}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+          >
+            Upload
+          </button>
+
+          <button
+            onClick={handlePhotoCancel}
+            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
 
       {/* Name Edit Section */}
       <motion.div
@@ -117,7 +177,9 @@ const StudentProfileEditSection = ({ student }) => {
         transition={{ delay: 0.2 }}
       >
         <div className="flex justify-between items-center mb-3">
-          <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">Name</p>
+          <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+            Name
+          </p>
           {!editMode && (
             <button
               onClick={() => setEditMode(true)}
@@ -144,16 +206,24 @@ const StudentProfileEditSection = ({ student }) => {
                 className="w-full p-3 border rounded-lg dark:bg-gray-800 dark:text-white"
               />
               <div className="flex space-x-3">
-                <button onClick={handleProfileUpdate} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                <button
+                  onClick={handleProfileUpdate}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
                   Save
                 </button>
-                <button onClick={() => setEditMode(false)} className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                <button
+                  onClick={() => setEditMode(false)}
+                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                >
                   Cancel
                 </button>
               </div>
             </motion.div>
           ) : (
-            <p className="p-3 bg-gray-50 dark:bg-gray-700 rounded text-gray-800 dark:text-white">{editName}</p>
+            <p className="p-3 bg-gray-50 dark:bg-gray-700 rounded text-gray-800 dark:text-white">
+              {editName}
+            </p>
           )}
         </AnimatePresence>
       </motion.div>
@@ -207,8 +277,19 @@ const StudentProfileEditSection = ({ student }) => {
                 required
               />
               <div className="flex space-x-2">
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Update</button>
-                <button type="button" onClick={() => setShowPasswordForm(false)} className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Cancel</button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Update
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordForm(false)}
+                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
               </div>
             </motion.form>
           )}
@@ -218,4 +299,4 @@ const StudentProfileEditSection = ({ student }) => {
   );
 };
 
-export default StudentProfileEditSection;
+export default StudentProfileEditsection;

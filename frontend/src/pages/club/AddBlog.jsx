@@ -123,4 +123,3 @@ const AddBlog = () => {
 
 export default AddBlog;
 
-// show live preview and styling 

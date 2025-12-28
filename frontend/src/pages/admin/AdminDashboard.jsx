@@ -1,4 +1,3 @@
-// src/components/AdminHome.jsx
 import React, { useEffect, useState } from "react";
 import { Menu, X, Moon, Sun } from "lucide-react";
 import { motion } from "framer-motion";
@@ -37,7 +36,7 @@ export const fetchblogs = async () => {
   }
 };
 
-// new helper to fetch admin info
+
 export const fetchAdminInfo = async () => {
   try {
     const res = await axios.get(`${apiBaseUrl}/api/admin/me`, { withCredentials: true });

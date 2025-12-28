@@ -1,12 +1,10 @@
-
-//// share and styling is pending 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Clubcard from "./Clubcard";
 
 
-const AllBlogs = ({clubs}) => {
+const Allclubs = ({clubs}) => {
  
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
@@ -83,4 +81,4 @@ const AllBlogs = ({clubs}) => {
   );
 };
 
-export default AllBlogs;
+export default Allclubs;

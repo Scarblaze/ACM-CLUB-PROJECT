@@ -1,13 +1,9 @@
-
- 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import BlogCard from "./Blogcard";
 
 const AllBlogs = ({blogs}) => {
-
-
     
   const [searchTerm, setSearchTerm] = useState("");
  

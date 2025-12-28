@@ -1,7 +1,6 @@
 import React from "react";
 import { Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import ShareButton from "./ShareSocially"; 
 
 const BlogCard = ({ blog }) => {
   const navigate = useNavigate();
@@ -34,14 +33,6 @@ const BlogCard = ({ blog }) => {
             <span>{blog.likes.length}</span>
           </div>
 
-          <div
-            onClick={(e) => {
-              e.stopPropagation();  // Prevents triggering the blog click event
-            }}
-            className="flex items-center gap-1 hover:text-blue-500 cursor-pointer"
-          >
-            <ShareButton url={blogUrl} title={blog.title} />
-          </div>
         </div>
 
         <button

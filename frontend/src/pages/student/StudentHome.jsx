@@ -12,7 +12,7 @@ import AllBlogs from "./AllBlogs";
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 export const fetchAllClubs = async () => {
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/students/clubs`, {
+    const response = await axios.get(`${apiBaseUrl}/api/student/clubs`, {
       withCredentials: true, // in case you're using cookies for auth
     });
     return response.data; // this should be the list of clubs
@@ -23,7 +23,7 @@ export const fetchAllClubs = async () => {
 };
 export const fetchstudentinfo = async () => {
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/students/me`, {
+    const response = await axios.get(`${apiBaseUrl}/api/student/me`, {
       withCredentials: true,
     });
     return response.data;
@@ -34,7 +34,7 @@ export const fetchstudentinfo = async () => {
 };
 export const fetchallblogs = async () => {
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/students/blogs`, {
+    const response = await axios.get(`${apiBaseUrl}/api/student/blogs`, {
       withCredentials: true, // in case you're using cookies for auth
     });
     return response.data;
@@ -167,7 +167,7 @@ const StudentHome = () => {
   if (loading) return <p>Loading...</p>;
   return (
     <div
-      className={`flex h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"}`}
+      className={`flex min-h-screen  ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"}`}
     >
       {/* Sidebar */}
       <div
@@ -208,10 +208,10 @@ const StudentHome = () => {
             {clubs.map((club) => (
               <div key={club._id} className="ml-2">
                 <p className="font-medium uppercase">{club.name}</p>
-                <Link to={`/student/home?tab=clubinfo&&id=${club._id}`} className="block ml-3 mt-1 px-2 py-1 rounded hover:bg-blue-700">
+                <Link to={`/student/home?tab=clubinfo&id=${club._id}`} className="block ml-3 mt-1 px-2 py-1 rounded hover:bg-blue-700">
                   Club Info
                 </Link>
-                <Link to={`/student/home?tab=clubblogs&&id=${club._id}`} className="block ml-3 px-2 py-1 rounded hover:bg-blue-700">
+                <Link to={`/student/home?tab=clubblogs&id=${club._id}`} className="block ml-3 px-2 py-1 rounded hover:bg-blue-700">
                   Club Blogs
                 </Link>
               </div>
@@ -270,7 +270,7 @@ const StudentHome = () => {
 
             {/* Navbar profile with robust URL handling and fallback */}
             <button
-              onClick={() => navigate("/StudentProfileSection")}
+              onClick={() => navigate("/Student/ProfileSection")}
               aria-label="Open profile"
             >
               {(() => {

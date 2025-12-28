@@ -78,7 +78,7 @@ const FullBlogView = ({blog}) => {
 		<img
 		  src={images[currentSlide]}
 		  alt="Blog Slide"
-		  className="w-full h-full object-cover rounded shadow-lg"
+		  className="w-full h-full object-contain rounded shadow-lg"
 		/>
 		<button
 		  onClick={prevSlide}
