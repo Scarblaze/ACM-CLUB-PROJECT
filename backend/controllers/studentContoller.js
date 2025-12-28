@@ -77,6 +77,23 @@ export const updateStudentProfile = async (req, res) => {
 
     if (name) student.name = name;
 
+   
+    
+    await student.save();
+    res.status(200).json({ message: 'Profile updated', student });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update profile' });
+  }
+};
+// Update profile photo
+export const updateStudentPhoto = async (req, res) => {
+  try {
+    const student = await Student.findById(req.student._id);
+
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+
+ 
+
     if (req.file) {
       // Delete old image if exists
       if (student.profilePic) {

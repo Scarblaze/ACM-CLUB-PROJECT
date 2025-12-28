@@ -131,7 +131,7 @@ export const updateCouncilMember = async (req, res) => {
   try {
     const {  name } = req.body;
     const { memberId } = req.params;
-    const file = req.file;
+  
 
     const member = req.club.clubCouncil.id(memberId);
     if (!member) {
@@ -139,6 +139,28 @@ export const updateCouncilMember = async (req, res) => {
     }
 
     if (name) member.name = name;
+
+    
+
+    await req.club.save();
+    res.json({ message: 'Council member updated', member });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating council member' });
+  }
+};
+
+export const updateCouncilMemberPhoto = async (req, res) => {
+  try {
+    
+    const { memberId } = req.params;
+    const file = req.file;
+
+    const member = req.club.clubCouncil.id(memberId);
+    if (!member) {
+      return res.status(404).json({ message: 'Council member not found' });
+    }
+
+   
 
     if (file) {
       if (member.profilepic) await deleteImage(member.profilepic);

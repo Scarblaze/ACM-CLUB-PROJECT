@@ -117,7 +117,7 @@ export const analytics= async (req, res)=> {
     const stats = {
       totalStudents: await Student.countDocuments(),
       approvedClubs: await Club.countDocuments({isApproved: true}),
-      disapprovedClubs: await Club.countDocuments({isApproved: false}),
+      pendingClubs: await Club.countDocuments({isApproved: false}),
       approvedBlogs: await Blog.countDocuments({status: 'approved'}),
       pendingBlogs: await Blog.countDocuments({status: 'pending'}),
     }
