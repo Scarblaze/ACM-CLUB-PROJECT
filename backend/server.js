@@ -42,7 +42,7 @@ app.use(async (req, res, next) => {
 
 
 app.use('/api/auth', authRoutes);
-app.use('/api/students',studentRoutes);
+app.use('/api/student',studentRoutes);
 app.use('/api/admin',adminRoutes);
 app.use('/api/club',clubRoutes);
 
