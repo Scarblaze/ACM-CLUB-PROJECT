@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-const FullClubView = ({club}) => {
+const FullClubcard = ({club}) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -23,12 +22,7 @@ const FullClubView = ({club}) => {
 		  { withCredentials: true } // for cookies/JWT session
 		);
 	
-		if (res.data.success) {
-		  toast.success("club  approved successfully!");
-		  // Optionally update the UI here (e.g., refetch blog list or mark as approved)
-		} else {
-		  toast.error(res.data.message || "Failed to approve blog");
-		}
+		toast.success(res.data.message || "Failed to approve blog");
 	  } catch (err) {
 		console.error("Approve blog error:", err);
 		toast.error("Something went wrong while approving the blog");
@@ -42,12 +36,7 @@ const FullClubView = ({club}) => {
 		  { withCredentials: true } // for cookies/JWT session
 		);
 	
-		if (res.data.success) {
-		  toast.success("club  rejected successfully!");
-		  // Optionally update the UI here (e.g., refetch blog list or mark as approved)
-		} else {
-		  toast.error(res.data.message || "Failed to reject club");
-		}
+		 toast.success("club  rejected successfully!");
 	  } catch (err) {
 		console.error("reject club error:", err);
 		toast.error("Something went wrong while rejecting the club");
@@ -63,7 +52,16 @@ const FullClubView = ({club}) => {
 		<h2 className="text-3xl font-bold">{club.name}</h2>
 		
 	  </div>
-
+          {/* Image slider */}
+              <div className="relative w-full h-80 rounded overflow-hidden">
+                <img
+                  src={club.photo}
+                  alt="Blog Slide"
+                  className="w-full h-full object-contain rounded shadow-lg"
+                />
+                
+              </div>
+          
 	 
 
 	  {/* Description */}
@@ -103,4 +101,4 @@ const FullClubView = ({club}) => {
   );
 };
 
-export default FullClubView;
+export default FullClubcard;
