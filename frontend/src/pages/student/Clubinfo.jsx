@@ -35,7 +35,7 @@ const Clubinfo = ({ club }) => {
                 className="flex flex-col items-center bg-gray-100 p-4 rounded-xl shadow-sm"
               >
                 <img
-                  src={member.profilePic || "/default-user.jpg"}
+                  src={member.profilepic}
                   alt={member.name}
                   className="w-24 h-24 rounded-full object-cover mb-3 border-2 border-indigo-500"
                 />
