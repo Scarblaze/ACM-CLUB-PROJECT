@@ -1,11 +1,10 @@
 import express from 'express';
 import {
-
-  logoutStudent,
   getAllApprovedClubs,
   getallblogs,
   getBlogsBySection,
   updateStudentProfile,
+  updateStudentPhoto,
   getLikedBlogs,
   getStudentInfo,
   likeOrUnlikeBlog,
@@ -23,7 +22,8 @@ router.get('/clubs', protectStudent, getAllApprovedClubs);// done
 router.get('/blogs', protectStudent, getallblogs);  
 router.get('/clubs/:clubId/profile', protectStudent, getclubprofile);
 router.get('/blogs/section/:section', protectStudent, getBlogsBySection);
-router.put('/update-profile', protectStudent, upload.single('profilePic'), updateStudentProfile);
+router.put('/update-profile', protectStudent, updateStudentProfile);
+router.put('/update-photo', protectStudent, upload.single('profilePic'), updateStudentPhoto);
 router.put('/change-password', protectStudent, changeStudentPassword);
 router.get('/liked-blogs', protectStudent, getLikedBlogs);
 router.get('/me', protectStudent, getStudentInfo);

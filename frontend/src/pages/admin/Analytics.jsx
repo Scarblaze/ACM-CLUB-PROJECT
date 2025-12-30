@@ -7,7 +7,7 @@ const AdminStats = () => {
   const [stats, setStats] = useState({
     totalStudents: 0,
     approvedClubs: 0,
-    disapprovedClubs: 0,
+    pendingClubs: 0,
     approvedBlogs: 0,
     pendingBlogs: 0,
   });
@@ -18,7 +18,7 @@ const AdminStats = () => {
     const fetchStats = async () => {
       try {
         const res = await axios.get(`${apiBaseUrl}/api/admin/analytics`, {
-          withCredentials: true, // if using cookies for auth
+          withCredentials: true, 
         });
         setStats(res.data);
         setLoading(false);
@@ -40,7 +40,7 @@ const AdminStats = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard label="Total Students" count={stats.totalStudents} color="bg-blue-100" />
         <StatCard label="Approved Clubs" count={stats.approvedClubs} color="bg-green-100" />
-        <StatCard label="Disapproved Clubs" count={stats.disapprovedClubs} color="bg-red-100" />
+        <StatCard label="Pending Clubs" count={stats.pendingClubs} color="bg-red-100" />
         <StatCard label="Approved Blogs" count={stats.approvedBlogs} color="bg-green-100" />
         <StatCard label="Pending Blogs" count={stats.pendingBlogs} color="bg-yellow-100" />
       </div>

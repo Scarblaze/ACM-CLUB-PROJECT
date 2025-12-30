@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import Student from '../models/student.js';
+import Student from '../models/Student.js';
 import Club from '../models/Club.js';
                                                         
 
@@ -63,4 +63,3 @@ export const isAdmin = (req, res, next) => {
     res.status(401).json({ message: 'Token invalid' });
    }
 };
-// done completely

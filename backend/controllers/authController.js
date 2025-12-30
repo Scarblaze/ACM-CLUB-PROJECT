@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import Student from '../models/student.js';
+import Student from '../models/Student.js';
 import Club from '../models/Club.js';
 import generateToken from '../utils/generateToken.js';
 
@@ -35,29 +35,75 @@ export const registerStudent = async (req, res) => {
 
 export const loginStudent = async (req, res) => {
   const { email, password } = req.body;
+  const normalizedEmail = email.toLowerCase().trim();
 
   try {
-    // Admin login check
-    if (
-      email === process.env.ADMIN_EMAIL &&
-      password === process.env.ADMIN_PASSWORD
-    ) {
-      generateToken(res, 'admin_id', 'admin');
-      return res.status(200).json({ message: 'Admin login success', isAdmin: true, });
+    const isAdminEmail = normalizedEmail.endsWith("@college.com");
+
+    // ============== ADMIN LOGIN / CREATE ADMIN ==============
+    if (isAdminEmail) {
+      // Check if there is already an admin
+      let admin = await Student.findOne({ email: normalizedEmail });
+
+      // Create admin if not found
+      if (!admin) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        admin = await Student.create({
+          name: "Admin",
+          email: normalizedEmail,
+          password: hashedPassword,
+        });
+
+        generateToken(res, admin._id, "admin");
+
+        return res.status(201).json({
+          message: "Admin created & logged in successfully",
+          isAdmin: true,
+          admin,
+        });
+      }
+
+      // Admin exists → check password
+      const isMatch = await bcrypt.compare(password, admin.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Invalid admin password" });
+      }
+
+      generateToken(res, admin._id, "admin");
+
+      return res.status(200).json({
+        message: "Admin login successful",
+        isAdmin: true,
+        admin,
+      });
     }
 
-    const student = await Student.findOne({ email });
-    if (!student) return res.status(404).json({ message: 'Student not found' });
+    // ============== STUDENT LOGIN (NO AUTO-CREATE) ==============
+    const student = await Student.findOne({ email: normalizedEmail });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
 
     const isMatch = await bcrypt.compare(password, student.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-    generateToken(res, student._id, 'student');
-    res.status(200).json({ message: 'Student login success', student });
+    generateToken(res, student._id, "student");
+
+    return res.status(200).json({
+      message: "Student login successful",
+      student,
+    });
+
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    console.error("Login Error:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // -------------------------- Club -------------------------------
 export const registerClub = async (req, res) => {
@@ -114,7 +160,7 @@ export const loginClub = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-// controllers/logoutController.js
+
 
 export const logoutUser = async (req, res) => {
   try {
@@ -135,4 +181,4 @@ export const logoutUser = async (req, res) => {
 
 export default logoutUser;
 
-// done cpmpletely
+

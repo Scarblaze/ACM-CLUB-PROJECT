@@ -3,7 +3,7 @@ import { Heart, Share2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-const BlogCard = ({ club }) => {
+const ClubCard = ({ club }) => {
   const navigate = useNavigate();
 
  
@@ -42,4 +42,4 @@ const BlogCard = ({ club }) => {
   );
 };
 
-export default BlogCard;
+export default ClubCard;

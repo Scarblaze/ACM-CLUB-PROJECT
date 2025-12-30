@@ -1,14 +1,7 @@
-
-//// share and styling is pending 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { toast } from "react-toastify";
 import BlogCard from "./Blogcard";
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-// need to update
 const AllBlogs = ({blogs}) => {
-
-
     
   const [searchTerm, setSearchTerm] = useState("");
  
@@ -36,8 +29,8 @@ const AllBlogs = ({blogs}) => {
   // Pagination logic
   const indexOfLastBlog = currentPage * blogsPerPage;
   const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
-  const currentBlogs = isMobile ? blogs : blogs.slice(indexOfFirstBlog, indexOfLastBlog);
-  const totalPages = Math.ceil(blogs.length / blogsPerPage);
+  const currentBlogs = isMobile ? filteredBlogs : filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
+  const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
 
   const goToNextPage = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
@@ -59,7 +52,7 @@ const AllBlogs = ({blogs}) => {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {currentBlogs.map((blog, i) => (
-              <BlogCard key={i} blog={blog} />
+              <BlogCard key={blog._id} blog={blog} />
             ))}
           </div>
 

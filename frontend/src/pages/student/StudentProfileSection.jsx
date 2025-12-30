@@ -3,13 +3,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from "framer-motion";
 import axios from "axios";
 import AllBlogs from "./AllBlogs";
-import StudentProfileEditSection from "./StudentProfileEditSection";
+import StudentProfileEditsection from "./StudentProfileEditSection";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchstudentinfo = async () => {
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/students/me`, {
+    const response = await axios.get(`${apiBaseUrl}/api/student/me`, {
       withCredentials: true,
     });
     return response.data;
@@ -21,7 +21,7 @@ export const fetchstudentinfo = async () => {
 
 export const fetchallblogs = async () => {
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/students/blogs`, {
+    const response = await axios.get(`${apiBaseUrl}/api/student/blogs`, {
       withCredentials: true,
     });
     return response.data;
@@ -40,7 +40,7 @@ const Profile = () => {
   const [photo, setPhoto] = useState(null);
   const [blogs, setBlogs] = useState([]);
 
-  const tab = new URLSearchParams(location.search).get("tab");
+  const tab = new URLSearchParams(location.search).get("tab")||"";
 
   const getLikedBlogs = (blogs, studentId) => {
     return blogs.filter((blog) =>
@@ -63,7 +63,7 @@ const Profile = () => {
         setBlogs(blogData);
         setLoading(false);
 
-        const storedPhoto = localStorage.getItem("profilePhoto");
+        const storedPhoto = studentData.profilePic ;
         if (storedPhoto) setPhoto(storedPhoto);
       } catch (error) {
         console.error(error);
@@ -84,8 +84,8 @@ const Profile = () => {
       return <AllBlogs blogs={postedBlogs} />;
     }
 
-    if (tab === "StudentProfileEditSection") {
-      return <StudentProfileEditSection student={student} />;
+    if (tab === "ProfileEditSection") {
+      return <StudentProfileEditsection student={student} />;
     }
 
     return (
@@ -106,7 +106,7 @@ const Profile = () => {
         {/* Profile Info */}
         <div className="flex flex-col items-center gap-4 mb-6">
           <img
-            src={student.profilePic || photo}
+            src={photo || "/default-user.jpg"}
             alt="Profile"
             className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full object-cover border-4 border-blue-400 shadow"
           />
@@ -116,7 +116,7 @@ const Profile = () => {
         {/* Navigation Buttons */}
         <div className="w-full flex flex-col gap-4">
           <button
-            onClick={() => navigate("?tab=StudentProfileEditSection")}
+            onClick={() => navigate("?tab=ProfileEditSection")}
             className="cursor-pointer w-full bg-blue-800 hover:scale-105 transition-transform duration-300 text-white py-2 rounded-lg text-sm sm:text-base font-medium shadow"
           >
             Edit Profile

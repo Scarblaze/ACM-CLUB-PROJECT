@@ -1,359 +1,342 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const ClubCouncil = ({ club }) => {
+  /* ================= STATES ================= */
   const [editingId, setEditingId] = useState(null);
   const [newName, setNewName] = useState("");
-  const [newImage, setNewImage] = useState(null);
+
   const [activeImageId, setActiveImageId] = useState(null);
-  const [newRole, setNewRole] = useState("");
-  const [isAddingMember, setIsAddingMember] = useState(false);
-  
-  const handleAddMember = async () => {
-    if (!newName || !newRole || !newImage) {
-      toast.warning("Please fill all fields and select an image");
-      return;
-    }
+  const [previewImages, setPreviewImages] = useState({});
+  const [selectedFiles, setSelectedFiles] = useState({});
+
+  /* ADD MEMBER */
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addName, setAddName] = useState("");
+  const [addRole, setAddRole] = useState("");
+  const [addImage, setAddImage] = useState(null);
+  const [addPreview, setAddPreview] = useState(null);
+
+  /* ================= IMAGE HANDLERS ================= */
+
+  const handleChooseImage = (memberId, file) => {
+    if (!file) return;
+
+    setPreviewImages((prev) => ({
+      ...prev,
+      [memberId]: URL.createObjectURL(file),
+    }));
+
+    setSelectedFiles((prev) => ({
+      ...prev,
+      [memberId]: file,
+    }));
+  };
+
+  const handleUploadImage = async (memberId) => {
+    const file = selectedFiles[memberId];
+    if (!file) return toast.warning("Please choose an image");
 
     const formData = new FormData();
-    formData.append("name", newName);
-    formData.append("profilepic", newImage);
-    formData.append("role", newRole);
-    
+    formData.append("profilepic", file);
+
     try {
-      await axios.post(
-        `${apiBaseUrl}/api/club/add-council-member`,
+      await axios.put(
+        `${apiBaseUrl}/api/club/update-council-member-photo/${memberId}`,
         formData,
         { withCredentials: true }
       );
 
-      toast.success("Council member added successfully!");
-      setNewRole("");
-      setNewName("");
-      setNewImage(null);
-      setIsAddingMember(false);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to add member");
+      toast.success("Photo updated");
+      setActiveImageId(null);
+      setPreviewImages({});
+      setSelectedFiles({});
+    } catch {
+      toast.error("Photo upload failed");
     }
   };
 
-  const handleNameEdit = (memberId, currentName) => {
-    setEditingId(memberId);
-    setNewName(currentName);
+  const cancelImageEdit = (memberId) => {
+    setPreviewImages((prev) => {
+      const copy = { ...prev };
+      delete copy[memberId];
+      return copy;
+    });
+
+    setSelectedFiles((prev) => {
+      const copy = { ...prev };
+      delete copy[memberId];
+      return copy;
+    });
+
     setActiveImageId(null);
   };
 
-  const handleImageEdit = (memberId) => {
-    setActiveImageId(memberId);
-    setEditingId(null);
+  /* ================= NAME EDIT ================= */
+
+  const handleNameEdit = (id, name) => {
+    setEditingId(id);
+    setNewName(name);
+    setActiveImageId(null);
   };
 
+  const handleNameSave = async (memberId) => {
+    if (!newName.trim()) return toast.warning("Name required");
+
+    try {
+      await axios.put(
+        `${apiBaseUrl}/api/club/update-council-member/${memberId}`,
+        { name: newName },
+        { withCredentials: true }
+      );
+
+      toast.success("Name updated");
+      setEditingId(null);
+    } catch {
+      toast.error("Name update failed");
+    }
+  };
+
+  /* ================= DELETE ================= */
+
   const handleDelete = async (memberId) => {
-    if (!window.confirm("Are you sure you want to delete this member?")) return;
-    
+    if (!window.confirm("Delete this member?")) return;
+
     try {
       await axios.delete(
         `${apiBaseUrl}/api/club/delete-council-member/${memberId}`,
         { withCredentials: true }
       );
-      toast.success("Council member deleted successfully!");
-    } catch (error) {
-      console.error(error);
+
+      toast.success("Member removed");
+    } catch {
       toast.error("Delete failed");
     }
   };
 
-  const handleSubmit = async (memberId) => {
-    if (!newName.trim()) {
-      toast.warning("Name cannot be empty");
-      return;
-    }
+  /* ================= ADD MEMBER ================= */
+
+  const handleAddMember = async () => {
+    if (!addName || !addRole || !addImage)
+      return toast.warning("All fields required");
 
     const formData = new FormData();
-    formData.append("name", newName);
-    if (newImage) formData.append("profilepic", newImage);
+    formData.append("name", addName);
+    formData.append("role", addRole);
+    formData.append("profilepic", addImage);
 
     try {
-      await axios.put(
-        `${apiBaseUrl}/api/club/update-council-member/${memberId}`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true,
-        }
-      );
+      await axios.post(`${apiBaseUrl}/api/club/add-council-member`, formData, {
+        withCredentials: true,
+      });
 
-      toast.success("Profile updated successfully!");
-      setEditingId(null);
-      setActiveImageId(null);
-      setNewImage(null);
-    } catch (error) {
-      console.error(error);
-      toast.error("Update failed");
+      toast.success("Council member added");
+      setShowAddForm(false);
+      setAddName("");
+      setAddRole("");
+      setAddImage(null);
+      setAddPreview(null);
+    } catch {
+      toast.error("Add failed");
     }
   };
 
+  /* ================= UI ================= */
+
   return (
-    <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
-      <h2 className="text-3xl font-bold text-center text-blue-600 dark:text-blue-400 mb-8">
-        Meet Our Dynamic Council
+    <div className="p-6 bg-white rounded-xl shadow-xl">
+      <h2 className="text-3xl font-bold text-center text-blue-600 mb-8">
+        Meet Our Council
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-10">
-        {club.clubCouncil.map((member, i) => (
-          <div
-            key={i}
-            className="relative bg-white dark:bg-gray-700 p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group"
-          >
-            {/* Member Image */}
-            <div className="relative mx-auto w-32 h-32 mb-4">
+      {/* MEMBERS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        {club.clubCouncil.map((member) => (
+          <div key={member._id} className="bg-white p-6 rounded-xl shadow-lg">
+            {/* PHOTO */}
+            <div className="w-32 mx-auto mb-4">
               <img
-                src={member.profilepic}
+                src={previewImages[member._id] || member.profilepic}
                 alt={member.name}
-                className="w-full h-full rounded-full object-cover border-4 border-white dark:border-gray-600 shadow-md group-hover:border-blue-400 transition-colors duration-300"
+                className="w-32 h-32 rounded-full object-cover mx-auto"
               />
+
               {activeImageId === member._id && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex flex-col items-center justify-center p-2">
+                <div className="mt-3 space-y-2">
                   <input
                     type="file"
+                    hidden
+                    id={`photo-${member._id}`}
                     accept="image/*"
-                    onChange={(e) => setNewImage(e.target.files[0])}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={(e) =>
+                      handleChooseImage(member._id, e.target.files[0])
+                    }
                   />
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+
+                  {/* CHOOSE */}
+                  <button
+                    onClick={() =>
+                      document
+                        .getElementById(`photo-${member._id}`)
+                        .click()
+                    }
+                    className="w-full bg-blue-600 text-white py-2 rounded"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                    />
-                  </svg>
-                  <span className="text-white text-xs mt-1 text-center">Click to upload</span>
+                    Choose
+                  </button>
+
+                  {/* SAVE + CANCEL */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleUploadImage(member._id)}
+                      className="flex-1 bg-green-600 text-white py-2 rounded"
+                    >
+                      Save
+                    </button>
+
+                    <button
+                      onClick={() => cancelImageEdit(member._id)}
+                      className="flex-1 bg-gray-300 py-2 rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Member Name */}
+            {/* NAME */}
             {editingId === member._id ? (
-              <div className="mb-3">
+              <>
                 <input
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full p-2 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  autoFocus
+                  className="w-full p-2 border rounded"
                 />
-                <div className="flex space-x-2 mt-2">
+                <div className="flex gap-2 mt-2">
                   <button
-                    onClick={() => handleSubmit(member._id)}
-                    className="flex-1 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    onClick={() => handleNameSave(member._id)}
+                    className="flex-1 bg-blue-600 text-white py-2 rounded"
                   >
                     Save
                   </button>
                   <button
                     onClick={() => setEditingId(null)}
-                    className="flex-1 py-1 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition"
+                    className="flex-1 bg-gray-300 py-2 rounded"
                   >
                     Cancel
                   </button>
                 </div>
-              </div>
+              </>
             ) : (
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white text-center mb-1">
-                {member.name}
-              </h3>
+              <h3 className="text-center font-semibold">{member.name}</h3>
             )}
 
-            {/* Member Role - Centered below name */}
-            <div className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-medium mb-4 mx-auto block w-fit">
+            {/* ROLE */}
+            <div className="text-center bg-blue-600 text-white rounded-full py-1 my-3">
               {member.role}
             </div>
 
-            {/* Action Buttons */}
+            {/* ACTIONS */}
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => handleNameEdit(member._id, member.name)}
-                className="py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center space-x-1"
+                className="bg-blue-600 text-white py-2 rounded"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-                <span>Edit</span>
+                Edit Name
               </button>
+
               <button
-                onClick={() => handleImageEdit(member._id)}
-                className={`py-2 rounded-lg transition flex items-center justify-center space-x-1 ${
-                  activeImageId === member._id
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-500"
-                }`}
+                onClick={() => {
+                  setActiveImageId(member._id);
+                  setEditingId(null);
+                }}
+                className="bg-gray-200 py-2 rounded"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                <span>Photo</span>
+                Edit Photo
               </button>
+
               <button
                 onClick={() => handleDelete(member._id)}
-                className="py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition col-span-2 flex items-center justify-center space-x-1"
+                className="bg-red-600 text-white py-2 rounded col-span-2"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-                <span>Remove</span>
+                Remove
               </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Add New Member Section */}
-      <div className="max-w-2xl mx-auto">
-        {!isAddingMember ? (
+      {/* ADD MEMBER */}
+      <div className="mt-10 max-w-md mx-auto">
+        {!showAddForm ? (
           <button
-            onClick={() => setIsAddingMember(true)}
-            className="w-full py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl hover:bg-blue-700 transition-all duration-300 flex items-center justify-center space-x-2"
+            onClick={() => setShowAddForm(true)}
+            className="w-full py-3 bg-blue-600 text-white rounded-xl"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-            <span>Add New Council Member</span>
+            Add New Council Member
           </button>
         ) : (
-          <div className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg">
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 text-center">
-              Add New Member
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Role
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., President, Design Head"
-                  value={newRole}
-                  onChange={(e) => setNewRole(e.target.value)}
-                  className="w-full p-3 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Member's full name"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="w-full p-3 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Profile Photo
-                </label>
-                <div className="flex items-center space-x-4">
-                  <div className="relative flex-1">
-                    <input
-                      type="file"
-                      id="newImageInput"
-                      accept="image/*"
-                      onChange={(e) => setNewImage(e.target.files[0])}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <div className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition">
-                      <span className="text-gray-700 dark:text-gray-300 truncate">
-                        {newImage ? newImage.name : "Choose a photo..."}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-gray-500 dark:text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex space-x-3 pt-2">
-                <button
-                  onClick={handleAddMember}
-                  className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-md"
-                >
-                  Add Member
-                </button>
-                <button
-                  onClick={() => {
-                    setIsAddingMember(false);
-                    setNewName("");
-                    setNewRole("");
-                    setNewImage(null);
-                  }}
-                  className="flex-1 py-3 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition"
-                >
-                  Cancel
-                </button>
-              </div>
+          <div className="bg-gray-50 p-6 rounded-xl shadow mt-4">
+            <input
+              placeholder="Full Name"
+              value={addName}
+              onChange={(e) => setAddName(e.target.value)}
+              className="w-full p-3 border rounded-lg mb-3"
+            />
+
+            <input
+              placeholder="Role"
+              value={addRole}
+              onChange={(e) => setAddRole(e.target.value)}
+              className="w-full p-3 border rounded-lg mb-4"
+            />
+
+            {addPreview && (
+              <img
+                src={addPreview}
+                className="w-24 h-24 rounded-full mx-auto mb-3 object-cover"
+              />
+            )}
+
+            <input
+              type="file"
+              hidden
+              id="add-photo"
+              accept="image/*"
+              onChange={(e) => {
+                setAddImage(e.target.files[0]);
+                setAddPreview(
+                  URL.createObjectURL(e.target.files[0])
+                );
+              }}
+            />
+
+            <button
+              onClick={() =>
+                document.getElementById("add-photo").click()
+              }
+              className="w-full py-3 bg-blue-600 text-white rounded-lg mb-4"
+            >
+              Choose Photo
+            </button>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleAddMember}
+                className="flex-1 py-3 bg-green-600 text-white rounded-lg"
+              >
+                Add
+              </button>
+              <button
+                onClick={() => setShowAddForm(false)}
+                className="flex-1 py-3 bg-gray-300 rounded-lg"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         )}

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X, Sun, Moon, Search, CircleUserRound } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-import { useNavigate, useLocation } from "react-router-dom";
 import Clubinfo from "./Clubinfo";
 import Postblog from "./postblog";
 import FullBlogView from "./FullBlogcard";
@@ -13,12 +12,9 @@ import AllBlogs from "./AllBlogs";
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 export const fetchAllClubs = async () => {
   try {
-    const response = await axios.get(
-      `${apiBaseUrl}/api/students/clubs`,
-      {
-        withCredentials: true, // in case you're using cookies for auth
-      }
-    );
+    const response = await axios.get(`${apiBaseUrl}/api/student/clubs`, {
+      withCredentials: true, // in case you're using cookies for auth
+    });
     return response.data; // this should be the list of clubs
   } catch (error) {
     console.error("Error fetching clubs:", error);
@@ -27,9 +23,7 @@ export const fetchAllClubs = async () => {
 };
 export const fetchstudentinfo = async () => {
   try {
-    const name = "abx";
-
-    const response = await axios.get(`${apiBaseUrl}/api/students/me`, {
+    const response = await axios.get(`${apiBaseUrl}/api/student/me`, {
       withCredentials: true,
     });
     return response.data;
@@ -40,9 +34,7 @@ export const fetchstudentinfo = async () => {
 };
 export const fetchallblogs = async () => {
   try {
-    const name = "abx";
-
-    const response = await axios.get(`${apiBaseUrl}/api/students/blogs`, {
+    const response = await axios.get(`${apiBaseUrl}/api/student/blogs`, {
       withCredentials: true, // in case you're using cookies for auth
     });
     return response.data;
@@ -54,6 +46,8 @@ export const fetchallblogs = async () => {
 
 const StudentHome = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,7 +55,7 @@ const StudentHome = () => {
   const [savedBlogs, setSavedBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [clubs, setClubs] = useState([]);
-  const [student, setstudent] = useState([]);
+  const [student, setstudent] = useState(null);
   const [blogs, setblogs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -84,7 +78,6 @@ const StudentHome = () => {
   };
   const toggleTheme = () => setDarkMode(!darkMode);
 
-
   useEffect(() => {
     const getClubs = async () => {
       try {
@@ -104,57 +97,81 @@ const StudentHome = () => {
     getClubs();
   }, []);
 
+  // derive tab from location
   const tab = new URLSearchParams(location.search).get("tab") || "allBlogs";
   const id = new URLSearchParams(location.search).get("id") || 12;
 
+  // determine if current tab is a "blogs" page where search should be shown
+  const isBlogTab = [
+    "allBlogs",
+    "home",
+    "clubblogs",
+    "Experience",
+    "Academic Resources",
+    "Intern",
+    "Tech Stacks",
+  ].includes(tab);
+
+  // if user navigates away from blog pages, close search input
+  useEffect(() => {
+    if (!isBlogTab) {
+      setIsSearchOpen(false);
+      setSearchQuery("");
+    }
+    // we intentionally only depend on tab/isBlogTab
+  }, [tab, isBlogTab]);
 
   const renderTabContent = () => {
-
-    const filteredBlogs = blogs.filter(blog =>
-      blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (blog.content && blog.content.toLowerCase().includes(searchQuery.toLowerCase()))
+    const filteredBlogs = blogs.filter(
+      (blog) =>
+        blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (blog.content && blog.content.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     if (tab === "clubinfo") {
       const foundClub = getClubById(clubs, id);
-      return <Clubinfo club={foundClub} />
-    }
-    else if (tab === "postblog") {
-      return <Postblog />
-    }
-    else if (tab === "clubblogs") {
+      return <Clubinfo club={foundClub} />;
+    } else if (tab === "postblog") {
+      return <Postblog />;
+    } else if (tab === "clubblogs") {
       const clubblogs = filterBlogsByClub(blogs, id);
-      return <AllBlogs blogs={clubblogs} />
-    }
-    else if (tab === "fullcard") {
+      return <AllBlogs blogs={clubblogs} />;
+    } else if (tab === "fullcard") {
       const blog = getblogbyid(blogs, id);
-      return <FullBlogView blog={blog} student={student} />
-
-    }
-    else if (tab === "Experience" || tab === "Academic Resources" || tab === "Intern" || tab === "Tech Stacks") {
-      // section wise blogs 
+      return <FullBlogView blog={blog} student={student} />;
+    } else if (
+      tab === "Experience" ||
+      tab === "Academic Resources" ||
+      tab === "Intern" ||
+      tab === "Tech Stacks"
+    ) {
+      // section wise blogs
       const sectionblogs = getsectionblogs(blogs, tab);
-      return <AllBlogs blogs={sectionblogs} />
-
-    }
-    else {
+      return <AllBlogs blogs={sectionblogs} />;
+    } else {
       return <AllBlogs blogs={filteredBlogs} />;
-
     }
+  };
 
+  // helper: normalise profile image URL
+  const getProfilePicUrl = (profilePic) => {
+    if (!profilePic) return null;
+    // if already an absolute URL, use it
+    if (/^https?:\/\//i.test(profilePic)) return profilePic;
+    // otherwise, join with apiBaseUrl (remove double slashes)
+    const base = (apiBaseUrl || "").replace(/\/$/, "");
+    const path = String(profilePic).replace(/^\/+/, "");
+    return `${base}/${path}`;
   };
 
   if (loading) return <p>Loading...</p>;
   return (
     <div
-      className={`flex h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"
-        }`}
+      className={`flex min-h-screen  ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"}`}
     >
       {/* Sidebar */}
       <div
-        className={`fixed z-30 md:static top-0 left-0 h-full w-64 ${darkMode ? "bg-gray-800" : "bg-blue-900"
-          } text-white transform transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-          }`}
+        className={`fixed z-30 md:static top-0 left-0 h-full w-64 ${darkMode ? "bg-gray-800" : "bg-blue-900"} text-white transform transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-blue-700">
           <h1 className="text-xl font-bold">Student Panel</h1>
@@ -165,41 +182,23 @@ const StudentHome = () => {
         <nav className="p-4 space-y-4 text-sm">
           <div>
             <h3 className="text-lg font-semibold mb-2">Student Blogs</h3>
-            <Link
-              to="/student/home?tab=home"
-              className="block px-3 py-2 rounded hover:bg-blue-700"
-            >
+            <Link to="/student/home?tab=home" className="block px-3 py-2 rounded hover:bg-blue-700">
               Home
             </Link>
-            <Link
-              to="/student/home?tab=Intern"
-              className="block px-3 py-2 rounded hover:bg-blue-700"
-            >
+            <Link to="/student/home?tab=Intern" className="block px-3 py-2 rounded hover:bg-blue-700">
               Intern / Placemnet
             </Link>
-            <Link
-              to="/student/home?tab=Academic Resources"
-              className="block px-3 py-2 rounded hover:bg-blue-700"
-            >
+            <Link to="/student/home?tab=Academic Resources" className="block px-3 py-2 rounded hover:bg-blue-700">
               Academic Resources
             </Link>
-            <Link
-              to="/student/home?tab=Tech Stacks"
-              className="block px-3 py-2 rounded hover:bg-blue-700"
-            >
+            <Link to="/student/home?tab=Tech Stacks" className="block px-3 py-2 rounded hover:bg-blue-700">
               Tech Stacks
             </Link>
-            <Link
-              to="/student/home?tab=Experience"
-              className="block px-3 py-2 rounded hover:bg-blue-700"
-            >
+            <Link to="/student/home?tab=Experience" className="block px-3 py-2 rounded hover:bg-blue-700">
               Experience
             </Link>
 
-            <Link
-              to="/student/home?tab=postblog"
-              className="block px-3 py-2 rounded hover:bg-blue-700"
-            >
+            <Link to="/student/home?tab=postblog" className="block px-3 py-2 rounded hover:bg-blue-700">
               Post New Blog
             </Link>
           </div>
@@ -209,16 +208,10 @@ const StudentHome = () => {
             {clubs.map((club) => (
               <div key={club._id} className="ml-2">
                 <p className="font-medium uppercase">{club.name}</p>
-                <Link
-                  to={`/student/home?tab=clubinfo&&id=${club._id}`}
-                  className="block ml-3 mt-1 px-2 py-1 rounded hover:bg-blue-700"
-                >
+                <Link to={`/student/home?tab=clubinfo&id=${club._id}`} className="block ml-3 mt-1 px-2 py-1 rounded hover:bg-blue-700">
                   Club Info
                 </Link>
-                <Link
-                  to={`/student/home?tab=clubblogs&&id=${club._id}`}
-                  className="block ml-3 px-2 py-1 rounded hover:bg-blue-700"
-                >
+                <Link to={`/student/home?tab=clubblogs&id=${club._id}`} className="block ml-3 px-2 py-1 rounded hover:bg-blue-700">
                   Club Blogs
                 </Link>
               </div>
@@ -230,58 +223,80 @@ const StudentHome = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Navbar */}
-        <div
-          className={`flex justify-between items-center shadow-md px-4 py-4 md:px-6 ${darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-            }`}
-        >
+        <div className={`flex justify-between items-center shadow-md px-4 py-4 md:px-6 ${darkMode ? "bg-gray-800 text-white" : "bg-white text-black"}`}>
           <button className="md:hidden" onClick={() => setSidebarOpen(true)}>
             <Menu />
           </button>
 
-          <h2 className="text-xl font-semibold text-blue-700 dark:text-white">
-            {student.name}
-          </h2>
+          <h2 className="text-xl font-semibold text-blue-700 dark:text-white">{student?.name || "Student"}</h2>
 
           <div className="flex items-center gap-4">
-            {isSearchOpen ? (
-              <motion.div
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                className="overflow-hidden"
-              >
-                <input
-                  type="text"
-                  placeholder="Search blogs..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="px-2 py-1 rounded border dark:bg-gray-700 dark:text-white w-full"
-                  autoFocus
-                  onBlur={() => {
-                    if (!searchQuery) setIsSearchOpen(false);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') {
-                      setIsSearchOpen(false);
-                      setSearchQuery("");
-                    }
-                  }}
-                />
-              </motion.div>
-            ) : (
-              <button
-                className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-                onClick={() => setIsSearchOpen(true)}
-              >
-                <Search className="w-5 h-5 cursor-pointer" />
-              </button>
-            )}
-            <button onClick={() => navigate("/StudentProfileSection")}>
-              <img
-                src={student.profilePic}
-                alt="Profile"
-                className="w-10 h-10 rounded-full object-cover border-2 border-gray-300 cursor-pointer"
-              />
+            {/* show search only on blog related pages */}
+            {isBlogTab ? (
+              isSearchOpen ? (
+                <motion.div
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="overflow-hidden"
+                >
+                  <input
+                    type="text"
+                    placeholder="Search blogs..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="px-2 py-1 rounded border dark:bg-gray-700 dark:text-white w-full"
+                    autoFocus
+                    onBlur={() => {
+                      if (!searchQuery) setIsSearchOpen(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setIsSearchOpen(false);
+                        setSearchQuery("");
+                      }
+                    }}
+                  />
+                </motion.div>
+              ) : (
+                <button
+                  className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                  onClick={() => setIsSearchOpen(true)}
+                >
+                  <Search className="w-5 h-5 cursor-pointer" />
+                </button>
+              )
+            ) : null}
+
+            {/* Navbar profile with robust URL handling and fallback */}
+            <button
+              onClick={() => navigate("/Student/ProfileSection")}
+              aria-label="Open profile"
+            >
+              {(() => {
+                const pic = student?.profilePic;
+                const url = getProfilePicUrl(pic);
+                if (url) {
+                  return (
+                    <img
+                      src={url}
+                      alt={student?.name || "Profile"}
+                      onError={(e) => {
+                        // fallback to default if image fails to load
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "/default-avatar.png";
+                      }}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-gray-300 cursor-pointer"
+                    />
+                  );
+                } else {
+                  return (
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 border-2 border-gray-300 cursor-pointer">
+                      <CircleUserRound className="w-6 h-6 text-gray-500" />
+                    </div>
+                  );
+                }
+              })()}
             </button>
 
             <button onClick={toggleTheme} className="cursor-pointer">
@@ -297,7 +312,6 @@ const StudentHome = () => {
           </div>
         </div>
 
-
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -312,4 +326,3 @@ const StudentHome = () => {
 };
 
 export default StudentHome;
-

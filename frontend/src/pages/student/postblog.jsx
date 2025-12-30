@@ -1,164 +1,200 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-import { toast } from "react-toastify";
-
-const AddBlog = () => {
+const CreateStudentBlog = () => {
   const navigate = useNavigate();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState(null);
-  const [images, setImages] = useState([]);
-  const [category, setCategory] = useState("");
+  const [section, setSection] = useState("");
+  const [coverImg, setCoverImg] = useState(null);
+  const [photos, setPhotos] = useState([]);
+
+  const [coverPreview, setCoverPreview] = useState("");
+  const [photoPreviews, setPhotoPreviews] = useState([]);
+
+  // Handle Cover Image Selection
+  const handleCoverChange = (e) => {
+    const file = e.target.files[0];
+    setCoverImg(file);
+    if (file) {
+      setCoverPreview(URL.createObjectURL(file));
+    }
+  };
+
+  // Handle Multiple Photos Selection
+  const handlePhotosChange = (e) => {
+    const files = Array.from(e.target.files);
+    setPhotos(files);
+    setPhotoPreviews(files.map((file) => URL.createObjectURL(file)));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!title || !description || !image || !category) {
-      toast.error("All fields are required");
+    if (!title || !description || !section || !coverImg) {
+      toast.error("All fields including cover image are required!");
       return;
     }
 
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
-    formData.append("coverimg", image);
-    formData.append("section", category);
-    images.forEach((img) => formData.append("photos", img));
+    formData.append("section", section);
+    formData.append("coverimg", coverImg);
+
+    photos.forEach((img) => formData.append("photos", img));
 
     try {
       const res = await axios.post(
-        `${apiBaseUrl}/api/students/create-blog`,
+        `${apiBaseUrl}/api/student/create-blog`,
         formData,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+        
           withCredentials: true,
         }
       );
 
+      toast.success("Blog submitted for approval!");
+
+      // Reset form
       setTitle("");
       setDescription("");
-      setImage(null);
-      setImages([]);
-      setCategory("");
-     // navigate(`/club/home?tab=allBlogs`);
-      toast.success("Blog posted successfully!");
+      setSection("");
+      setCoverImg(null);
+      setPhotos([]);
+      setCoverPreview("");
+      setPhotoPreviews([]);
+
+      navigate("/student/home?tab=myBlogs");
+
     } catch (error) {
       console.error(error);
-      toast.error("Failed to post blog");
+      toast.error(error.response?.data?.message || "Failed to create blog");
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg mt-6">
-      <h2 className="text-2xl font-semibold text-center text-blue-700 dark:text-white mb-6">
-        Add a New Blog
+    <div className="max-w-xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg mt-6">
+      <h2 className="text-2xl font-semibold text-center text-blue-600 dark:text-white mb-6">
+        Create New Blog
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+
         {/* Title */}
         <input
           type="text"
           placeholder="Blog Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-3 border-2 border-gray-300 rounded-md dark:bg-gray-700 dark:text-white"
+          className="w-full p-3 border rounded-md dark:bg-gray-700 dark:text-white"
         />
 
         {/* Description */}
         <textarea
-          placeholder="Blog Description"
+          placeholder="Write your blog description..."
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full p-3 border-2 border-gray-300 rounded-md dark:bg-gray-700 dark:text-white"
           rows="6"
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full p-3 border rounded-md dark:bg-gray-700 dark:text-white"
         />
 
-        {/* Category Dropdown */}
-        <div>
-          <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">
-            Select Category
-          </label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full p-2 border-2 border-gray-300 rounded-md dark:bg-gray-700 dark:text-white"
-          >
-            //"Intern", "Academic Resources", "Tech Stacks", "Experience",
-            <option value="">-- Choose Category --</option>
-            <option value="Intern">Internship / Placement</option>
-            <option value="Academic Resources">Academic Resources</option>
-            <option value="Tech Stacks">Tech Stack</option>
-            <option value="Experience">Experience</option>
-          </select>
-        </div>
+        {/* Section */}
+        <select
+          value={section}
+          onChange={(e) => setSection(e.target.value)}
+          className="w-full p-3 border rounded-md dark:bg-gray-700 dark:text-white"
+        >
+          <option value="">Select Section</option>
+          <option value="Intern">Intern</option>
+          <option value="Academic Resources">Academic Resources</option>
+          <option value="Tech Stacks">Tech Stacks</option>
+          <option value="Experience">Experience</option>
+        </select>
 
-        {/* Cover Image */}
+        {/* Cover Image Upload */}
         <div>
-          <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">
-            Upload Cover Image
+          <label className="font-medium text-gray-700 dark:text-gray-300">
+            Cover Image (Required)
           </label>
+
+          <button
+            type="button"
+            onClick={() => document.getElementById("coverInput").click()}
+            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Upload Cover Image
+          </button>
+
           <input
+            id="coverInput"
             type="file"
             accept="image/*"
-            onChange={(e) => setImage(e.target.files[0])}
-            className="block w-full text-sm text-gray-700 dark:text-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 transition"
+            onChange={handleCoverChange}
+            className="hidden"
           />
+
+          {/* Cover Preview */}
+          {coverPreview && (
+            <img
+              src={coverPreview}
+              alt="Cover Preview"
+              className="mt-3 h-40 w-full object-contain rounded-md"
+            />
+          )}
         </div>
 
-        {/* Additional Images */}
+        {/* Additional Photos */}
         <div>
-          <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">
-            Upload Additional Images
+          <label className="font-medium text-gray-700 dark:text-gray-300">
+            Additional Images (Optional)
           </label>
+
+          <button
+            type="button"
+            onClick={() => document.getElementById("photosInput").click()}
+            className="mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          >
+            Upload More Images
+          </button>
+
           <input
+            id="photosInput"
             type="file"
             accept="image/*"
             multiple
-            onChange={(e) => setImages(Array.from(e.target.files))}
-            className="block w-full text-sm text-gray-700 dark:text-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 transition"
+            onChange={handlePhotosChange}
+            className="hidden"
           />
+
+          {/* Image Previews */}
+          <div className="grid grid-cols-3 gap-3 mt-3">
+            {photoPreviews.map((src, idx) => (
+              <img
+                key={idx}
+                src={src}
+                className="h-24 w-full object-cover rounded-md"
+              />
+            ))}
+          </div>
         </div>
 
         {/* Submit */}
         <button
           type="submit"
-          className="w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 transition duration-300"
+          className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700"
         >
           Submit Blog
         </button>
-      </form>
 
-      {/* Live Preview */}
-      {(title || description || image) && (
-        <div className="mt-10 p-6 border-2 border-dashed border-blue-300 rounded-lg bg-gray-50 dark:bg-gray-900">
-          <h3 className="text-xl font-semibold text-center text-gray-800 dark:text-white mb-4">
-            Live Preview
-          </h3>
-          <h4 className="text-2xl font-bold text-blue-700 mb-2 uppercase text-center">
-            {title}
-          </h4>
-          {image && (
-            <div className="flex justify-center mb-4">
-              <img
-                src={URL.createObjectURL(image)}
-                alt="Cover"
-                className="max-h-64 rounded-lg shadow-md"
-              />
-            </div>
-          )}
-          <p className="text-md text-gray-700 dark:text-gray-200 text-center leading-relaxed">
-            {description}
-          </p>
-        </div>
-      )}
+      </form>
     </div>
   );
 };
 
-export default AddBlog;
+export default CreateStudentBlog;

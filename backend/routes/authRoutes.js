@@ -12,7 +12,7 @@ const router = express.Router();
 
 import Club from '../models/Club.js';
 // Student & Admin
-import Student from '../models/student.js';
+import Student from '../models/Student.js';
 router.post('/student/register',upload.single("profilepic"),registerStudent);
 router.post('/student/login', loginStudent);
 

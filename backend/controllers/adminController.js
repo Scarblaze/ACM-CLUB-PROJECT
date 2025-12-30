@@ -2,6 +2,7 @@
 import Blog from '../models/Blog.js';
 import Club from '../models/Club.js';
 import Student from '../models/Student.js';
+import bcrypt from 'bcryptjs';
 
 export const allClubs = async (req, res) => {
   try {
@@ -116,7 +117,7 @@ export const analytics= async (req, res)=> {
     const stats = {
       totalStudents: await Student.countDocuments(),
       approvedClubs: await Club.countDocuments({isApproved: true}),
-      disapprovedClubs: await Club.countDocuments({isApproved: false}),
+      pendingClubs: await Club.countDocuments({isApproved: false}),
       approvedBlogs: await Blog.countDocuments({status: 'approved'}),
       pendingBlogs: await Blog.countDocuments({status: 'pending'}),
     }
@@ -124,5 +125,47 @@ export const analytics= async (req, res)=> {
   } catch(error)
   {
     res.status(500).json({message: 'Failed to get analytics'});
+  }
+};
+export const resetAdminAccount = async (req, res) => {
+  try {
+    const { newEmail, newPassword } = req.body;
+
+    if (!newEmail || !newPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Validate admin email domain
+    if (!newEmail.endsWith("@college.com")) {
+      return res.status(400).json({
+        message: "Admin email must end with @college.com",
+      });
+    }
+
+    const normalizedEmail = newEmail.toLowerCase().trim();
+
+    // Delete ANY existing admin (any user with @college.com email)
+    await Student.deleteMany({
+      email: { $regex: /@college\.com$/i }
+    });
+
+    // Create new admin
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const newAdmin = await Student.create({
+      name: "Admin",
+      email: normalizedEmail,
+      password: hashedPassword
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Admin reset successfully",
+      admin: newAdmin,
+    });
+
+  } catch (error) {
+    console.error("Reset admin error:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
